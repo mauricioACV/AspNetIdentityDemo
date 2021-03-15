@@ -7,6 +7,9 @@ using Web_MVC.Models;
 using System.Security.Claims;
 using Microsoft.AspNet.Identity;
 using Microsoft.Owin.Security;
+using Web_MVC.Helpers;
+using System.Threading.Tasks;
+using RepositorioGenerico;
 
 namespace Web_MVC.Controllers
 {
@@ -84,5 +87,99 @@ namespace Web_MVC.Controllers
 
             return RedirectToAction("Index", "Home");
         }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public ActionResult ExternalLinkLogin(string provider, string returnUrl)
+        {
+            string UserID = null;
+            // Obtenemos el identificador del usuario autenticado
+            if (this.User.Identity.IsAuthenticated && User is ClaimsPrincipal)
+            {
+                var Identity = User as ClaimsPrincipal;
+                var Claims = Identity.Claims.ToList();
+                UserID = Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier).Value;
+            }
+            // Solicitamos un Redirect al proveedor externo
+            return new ChallengeResult(provider, Url.Action(
+                "ExternalLinkLoginCallback", "Account", new { ReturnUrl = returnUrl }), UserID);
+        }
+
+        public async Task<ActionResult> ExternalLinkLoginCallback()
+        {
+            ActionResult Result;
+            // Obtener la información devuelta por el proveedor externo
+            var LoginInfo =
+                await HttpContext.GetOwinContext().
+                Authentication.GetExternalLoginInfoAsync(
+                    ChallengeResult.XsrfKey, User.Identity.GetUserId());
+
+            if (LoginInfo == null)
+                Result = Content("No se pudo realizar la autenticación con el proveedor externo");
+            else
+            {
+                // El usuario ha sido autenticado por el proveedor externo!
+                // Obtener la llave del proveedor de autenticación.
+                // Esta llave es específica del usuario.
+                string ProviderKey = LoginInfo.Login.ProviderKey;
+                // Obtener el nombre del proveedor de autenticación.
+                string ProviderName = LoginInfo.Login.LoginProvider;
+                // Enlazar los datos de la cuenta externa con la cuenta de usuario local. 
+                int IdUsuario = int.Parse(Funciones.GetClaimInfo(ClaimTypes.NameIdentifier));
+                //User.Identity.GetUserId<int>()
+                Repositorio<Usuario> Usuario = new Repositorio<Usuario>(contexto);
+                Repositorio.Excepcion += Repositorio_Excepcion;
+                Usuario.Update(x => x.Id == IdUsuario, "ProviderKey", ProviderKey);
+                Usuario.Update(x => x.Id == IdUsuario, "ProviderName", ProviderName);
+                Repositorio.Excepcion -= Repositorio_Excepcion;
+                Result = Content($"Se ha enlazado la cuenta local con la cuenta de {ProviderName}");
+            }
+            return Result;
+        }
+
+        private void Repositorio_Excepcion(object sender, ExceptionEvenArgs e)
+        {
+
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public ActionResult ExternalLogin(string provider, string returnUrl)
+        {
+            // Solicitamos un Redirect al proveedor externo.
+            return new
+                ChallengeResult(provider, Url.Action(
+                    "ExternalLoginCallback", "Account", new { ReturnUrl = returnUrl }));
+        }
+
+        public async Task<ActionResult> ExternalLoginCallback(string returnUrl)
+        {
+            ActionResult Result;
+
+            // Obtener la información devuelta por el proveedor externo
+            var LoginInfo = await HttpContext.GetOwinContext().
+                Authentication.GetExternalLoginInfoAsync();
+
+            if (LoginInfo == null)
+                // No se pudo autenticar.
+                Result = RedirectToAction("Login");
+            else
+            {
+                // El usuario ha sido autenticado por el proveedor externo!
+                // Obtener la llave del proveedor que identifica al usuario.
+                string ProviderKey = LoginInfo.Login.ProviderKey;
+                // Buscar al usuario
+                Repositorio<Usuario> Usuario = new Repositorio<Usuario>(contexto);
+
+                var User = Usuario.Retrieve(x => x.ProviderKey == ProviderKey);
+                if (User != null)// Se ha encontrado al usuario. Iniciar la sesión del usuario.                    
+                    Result = SignInUser(User, false, returnUrl);
+                else
+                    Result = Content($"Imposible iniciar sesión con {LoginInfo.Login.LoginProvider}");
+            }
+            return Result;
+        }
+
+
     }
 }

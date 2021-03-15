@@ -2,6 +2,9 @@
 using System.IO;
 using System.Text;
 using System.Security.Cryptography;
+using System.Security.Claims;
+using System.Threading;
+using System.Linq;
 
 namespace Web_MVC.Models
 {
@@ -50,6 +53,17 @@ namespace Web_MVC.Models
                 }
             }
             return cipherText;
+        }
+
+        internal static string GetClaimInfo(string nameIdentifier)
+        {
+            //Accedemos al usuario logeado
+            ClaimsPrincipal Principal = Thread.CurrentPrincipal as ClaimsPrincipal;
+            var identificador = Principal.Claims.FirstOrDefault(x => x.Type == nameIdentifier);
+            if (identificador != null)
+                return identificador.Value;
+            else
+                return "";
         }
     }
 }

@@ -18,6 +18,16 @@ namespace Web_MVC.App_Start
                 AuthenticationType = DefaultAuthenticationTypes.ApplicationCookie,
                 LoginPath = new PathString("/account/login")
             });
+
+            app.UseExternalSignInCookie(DefaultAuthenticationTypes.ExternalCookie);
+
+            app.UseFacebookAuthentication(appId: "1234", appSecret: "1234");
+            
+            app.UseGoogleAuthentication(clientId: "1234", clientSecret: "1234");
+
+            app.UseMicrosoftAccountAuthentication(clientId: "1234", clientSecret: "1234");
+
+            app.UseTwitterAuthentication(consumerKey: "1234", consumerSecret: "1234");
         }
     }
 }

@@ -1,4 +1,5 @@
 ﻿@model Web_MVC.Models.LoginViewModel
+@using Microsoft.Owin.Security
 
 @{
     Layout = null;
@@ -35,9 +36,28 @@
                 @Html.LabelFor(model => model.RememberMe)
             </div>
             <div>
-                <input type="submit" value="Iniciar Sesion"/>
+                <input type="submit" value="Iniciar Sesion" />
             </div>
         }
     </div>
+    @*Para iniciar sessión con el proveedor enlazado previamente*@
+    <h1>Iniciar sesión con una cuenta externa</h1>
+    @using (Html.BeginForm("ExternalLogin", "Account"))
+    {
+        @Html.AntiForgeryToken()
+        var loginProviders = Context.GetOwinContext().
+            Authentication.GetExternalAuthenticationTypes();
+
+        <div>
+            @foreach (AuthenticationDescription p in loginProviders)
+            {
+                <button type="submit" id="@p.AuthenticationType"
+                        name="provider" value="@p.AuthenticationType"
+                        title="Inicia sesión utilizando tu cuenta @p.Caption">
+                    @p.AuthenticationType
+                </button>
+            }
+        </div>
+    }
 </body>
 </html>
