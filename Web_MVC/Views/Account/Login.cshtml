@@ -1,0 +1,43 @@
+﻿@model Web_MVC.Models.LoginViewModel
+
+@{
+    Layout = null;
+}
+
+<!DOCTYPE html>
+
+<html>
+<head>
+    <meta name="viewport" content="width=device-width" />
+    <title>Login</title>
+</head>
+<body>
+    <div>
+        @using (Html.BeginForm())
+        {
+            @Html.AntiForgeryToken()
+            <h4>Inicio de Sesion</h4>
+            <hr />
+            <div>
+                @Html.LabelFor(model => model.Email)
+            </div>
+            <div>
+                @Html.EditorFor(model => model.Email)
+            </div>
+            <div>
+                @Html.LabelFor(model => model.Password)
+            </div>
+            <div>
+                @Html.EditorFor(model => model.Password)
+            </div>
+            <div>
+                @Html.EditorFor(model => model.RememberMe)
+                @Html.LabelFor(model => model.RememberMe)
+            </div>
+            <div>
+                <input type="submit" value="Iniciar Sesion"/>
+            </div>
+        }
+    </div>
+</body>
+</html>

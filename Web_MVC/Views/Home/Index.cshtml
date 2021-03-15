@@ -1,0 +1,50 @@
+﻿
+@{
+    Layout = null;
+}
+
+<!DOCTYPE html>
+
+<html>
+<head>
+    <meta name="viewport" content="width=device-width" />
+    <title>Index</title>
+</head>
+<body>
+    <div>
+        @ViewData["FullUserName"]
+        @*@ViewBag.FullUserName*@
+    </div>
+    <div>
+        <h1>Autenticacion y Autorizacion en ASP.NET MVC</h1>
+
+        <div>
+            @Html.ActionLink("contenido para usuarios autenticados", "AuthenticatedUsers", "Home")
+        </div>
+        <div>
+            @Html.ActionLink("Para Pedro y Ana", "Payments", "Home")
+        </div>
+        <div>
+            @Html.ActionLink("Para Administradores", "AdminUsers", "Home")
+        </div>
+        <div>
+            @Html.ActionLink("Para Administradores y RRHH", "AdminRH", "Home")
+        </div>
+
+        <div>
+            @Html.ActionLink("Mostrar Claims", "GetClaims", "Home")
+        </div>
+
+        <div>
+            @Html.ActionLink("Mostrar Roles", "GetRoles", "Home")
+        </div>
+
+        <div>
+            @Html.ActionLink("Iniciar Session", "Login", "Account")
+        </div>
+        <div>
+            @Html.ActionLink("Cerrar Session", "LogOff", "Account")
+        </div>
+    </div>
+</body>
+</html>
